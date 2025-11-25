@@ -5,7 +5,7 @@ Note: for online testing copy the content of the file that exist in the folder n
 
 -CRUD  -STATEMANAGMENT - LOCALSTORAGE -SORT DATA
 
-- the app uses the CRUD operations (create, read, update, delete), and save students to localstorage
+- the app uses the CRUD operations (create, read, update, delete), and save entires to localstorage
 and retrives them on startup if they exist in localstorage, and mange app state through Provider.
 
 
