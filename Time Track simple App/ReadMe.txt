@@ -1,5 +1,5 @@
 Note: for online testing copy the content of the file that exist in the folder named (dartpad)
- and paste the content on https://dartpad.dev/ panel 
+ and paste the content on https://dartpad.dev/
  keep in mind online testing does not support all the features in the project mainly localstrorage
  (storage will not be working if testing online)
 
