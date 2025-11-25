@@ -300,6 +300,7 @@ class MainApp extends StatelessWidget {
     create:(_) =>StudentProvider(),
     child: MaterialApp(
       title: 'Student Management App',
+      debugShowCheckedModeBanner: false,
       home: homescreen(), 
     ),
     );
