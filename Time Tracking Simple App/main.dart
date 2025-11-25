@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_final_project/expense_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
-import 'add_expense_screen.dart';
-import 'category_tag_managementScreen.dart';
+import 'package:time_tracking/model.dart';
+import 'package:time_tracking/project_management.dart';
+import 'time_entery_provide.dart';
+import 'add_update_entry.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,21 +15,22 @@ Future<void> main() async {
 
 class MainApp extends StatelessWidget {
   final LocalStorage localStorage;
-  MainApp({super.key, required this.localStorage});
+  const MainApp({super.key, required this.localStorage});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<ExpenseProvider>(
-      create: (_) => ExpenseProvider(storage: localStorage),
-      child: MaterialApp(title: 'Expense Manager',
-       debugShowCheckedModeBanner: false,
-       initialRoute: '/',
-       routes: {
-        '/': (context)=>HomeScreen(),
-        '/manage_categories':(context)=>CategoryManagementScreen(),
-        '/manage_tags':(context)=>TagManagementScreen(),
-       },
-     ),
+    return ChangeNotifierProvider<TimeEntryProvider>(
+      create: (_) => TimeEntryProvider(storage: localStorage),
+      builder:(context,child)=> MaterialApp(
+        title: 'Time Entry Manager',
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => HomeScreen(),
+          '/manage_projects': (context) => ManageProjectsScreen(),
+          '/manage_tasks': (context) => ManageTasksScreen(),
+        },
+      ),
     );
   }
 }
@@ -38,11 +40,11 @@ class HomeScreen extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _HomeScreenState();
+    return HomeScreenState();
   }
 }
 
-class _HomeScreenState extends State<HomeScreen>
+class HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -62,29 +64,37 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Expenses List'),
+        title: Text('Time Tracking'),
         centerTitle: true,
-        backgroundColor: Colors.green,
+        backgroundColor: const Color.fromARGB(255, 0, 193, 113),
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: Colors.yellow[700],
           labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          unselectedLabelColor: const Color.fromARGB(185, 0, 0, 0),
           tabs: [
-            Tab(text: 'By Date'),
-            Tab(text: 'By Category'),
+            Tab(text: 'All Entries'),
+            Tab(text: 'Grouped by Projects'),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          ListOfEntries(sortBy: 'default'),
+          ListOfEntries(sortBy: 'Projects'),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            SizedBox(
-              height: 74,
-              child: const DrawerHeader(
-                decoration: BoxDecoration(color: Colors.green),
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 0, 193, 113),
+              ),
+              child: Center(
                 child: Text(
                   'Menu',
                   style: TextStyle(fontSize: 24, color: Colors.white),
@@ -92,98 +102,84 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             ListTile(
-              leading: Icon(Icons.category,color: Colors.green,),
-              title: Text('Manage Category'),
+              leading: Icon(Icons.folder, color: Colors.black),
+              title: Text('Projects'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage_categories');
+                Navigator.pushNamed(context, '/manage_projects');
               },
             ),
             ListTile(
-              leading: Icon(Icons.tag,color: Colors.green,),
-              title: Text('Manage Tags'),
+              leading: Icon(Icons.task, color: Colors.black),
+              title: Text('Tasks'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage_tags');
+                Navigator.pushNamed(context, '/manage_tasks');
               },
             ),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          ExpenseList(sortType: 'Date'),
-          ExpenseList(sortType: 'Category'),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.yellow[700],
         foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddExpenseScreen()),
+            MaterialPageRoute(builder: (context) => AddOrUpdateEntry()),
           );
         },
-        tooltip: 'Add expense',
         child: Icon(Icons.add),
       ),
     );
   }
 }
 
-class ExpenseList extends StatefulWidget {
-  final String sortType;
+class ListOfEntries extends StatefulWidget {
+  final String sortBy;
 
-  const ExpenseList({super.key, required this.sortType});
-
+  const ListOfEntries({super.key, required this.sortBy});
   @override
   State<StatefulWidget> createState() {
-    return ExpenseListState();
+    return ListOfEntriesState();
   }
 }
 
-class ExpenseListState extends State<ExpenseList> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      Provider.of<ExpenseProvider>(
-        context,
-        listen: false,
-      ).setSortType(widget.sortType);
-    });
-  }
-
+class ListOfEntriesState extends State<ListOfEntries> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<ExpenseProvider>(
+    
+   
+    return Consumer<TimeEntryProvider>(
       builder: (context, provider, child) {
+         final List<TimeEntry> data = widget.sortBy == 'default'
+        ? provider.entries
+        : provider.sortedByProject;
         return ListView.builder(
-          itemCount: provider.expenses.length,
+          itemCount: data.length,
           itemBuilder: (context, index) {
-            final expense = provider.expenses[index];
-            return ListTile(
-              title: Text('${expense.payee} - \$${expense.amount}'),
-              subtitle: Text(
-                'Category: ${expense.categoryId} - Date: ${DateFormat('yyyy-MM-dd').format(expense.date)}',
-              ),
-              trailing: IconButton(
-                onPressed: () {
-                  provider.removeExpense(expense.id);
+            final entry = data[index];
+            return Card(
+              margin: EdgeInsets.all(16),
+              elevation: 5.0,
+              child: ListTile(
+                title: Text('${entry.projectName} - ${entry.taskName}'),
+                subtitle: Text(
+                  'Total Time: ${entry.totalTime}\nDate: ${DateFormat('yyyy-MM-dd').format(entry.date)}\nNote: ${entry.note}',
+                ),
+                trailing: IconButton(
+                  onPressed: () {
+                    provider.deleteEntry(entry.id);
+                  },
+                  icon: Icon(Icons.delete, color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddOrUpdateEntry(entry: entry),
+                    ),
+                  );
                 },
-                icon: Icon(Icons.delete, color: Colors.red),
               ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        AddExpenseScreen(initialExpense: expense),
-                  ),
-                );
-              },
             );
           },
         );
@@ -191,17 +187,3 @@ class ExpenseListState extends State<ExpenseList> {
     );
   }
 }
-
-
-
-/*
-
-*/
-
-
-
-
-
-
-
-                                                   
