@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_final_project/expense_model.dart';
-import 'expense_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:time_tracking/model.dart';
+import 'time_entery_provide.dart';
 
-class AddCategoryDialog extends StatefulWidget {
-  const AddCategoryDialog({super.key});
+class AddProjectDialog extends StatefulWidget {
+  const AddProjectDialog({super.key});
 
   @override
-  State<StatefulWidget> createState() => _AddCategoryDialogState();
+  State<StatefulWidget> createState() => _AddProjectDialogState();
 }
 
-class _AddCategoryDialogState extends State<AddCategoryDialog> {
+class _AddProjectDialogState extends State<AddProjectDialog> {
   final TextEditingController _namecontroller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Category'),
+      title: Text('Add Project'),
       content: TextField(
         controller: _namecontroller,
-        decoration: InputDecoration(labelText: 'Category Name'),
+        decoration: InputDecoration(labelText: 'Project Name'),
       ),
       actions: [
         TextButton(
@@ -30,17 +30,17 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            final categoryName = _namecontroller.text;
-            if (categoryName.isNotEmpty) {
-              final category = Category(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                name: categoryName,
+            final projectName = _namecontroller.text;
+            if (projectName.isNotEmpty) {
+              final project = Project(
+                id: DateTime.now().toString(),
+                name: projectName,
               );
-              Provider.of<ExpenseProvider>(
+              Provider.of<TimeEntryProvider>(
                 context,
                 listen: false,
-              ).addCategory(category);
-              Navigator.of(context).pop(categoryName);
+              ).addProject(project);
+              Navigator.of(context).pop(projectName);
             }
           },
           child: Text('Add'),
@@ -56,22 +56,22 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
   }
 }
 
-class AddTagDialog extends StatefulWidget {
-  const AddTagDialog({super.key});
+class AddTaskDialog extends StatefulWidget {
+  const AddTaskDialog({super.key});
   @override
-  State<StatefulWidget> createState() => _AddTagDialogState();
+  State<StatefulWidget> createState() => _AddTaskDialogState();
 }
 
-class _AddTagDialogState extends State<AddTagDialog> {
+class _AddTaskDialogState extends State<AddTaskDialog> {
   final TextEditingController _namecontroller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Tag'),
+      title: Text('Add Task'),
       content: TextField(
         controller: _namecontroller,
-        decoration: InputDecoration(labelText: 'Tag Name'),
+        decoration: InputDecoration(labelText: 'Task Name'),
       ),
       actions: [
         TextButton(
@@ -82,14 +82,14 @@ class _AddTagDialogState extends State<AddTagDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            final tagname = _namecontroller.text;
-            if (tagname.isNotEmpty) {
-              final tag = Tag(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                name: tagname,
-              );
-              Provider.of<ExpenseProvider>(context,listen: false).addTag(tag);
-              Navigator.of(context).pop(tagname);
+            final taskname = _namecontroller.text;
+            if (taskname.isNotEmpty) {
+              final task = Task(id: DateTime.now().toString(), name: taskname);
+              Provider.of<TimeEntryProvider>(
+                context,
+                listen: false,
+              ).addTask(task);
+              Navigator.of(context).pop(taskname);
             }
           },
           child: Text('Add'),
