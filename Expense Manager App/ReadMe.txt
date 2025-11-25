@@ -14,4 +14,4 @@ read: available expenses will be read and displayed on homepage screen
 update: clicking on the existing expense on hompeage will take you to edit expense page to update
 delete: clicking on delete Icon delete the expense
 
-menu icon will will open side panael with 2 options that will take you to manage categories and tags pages.
+menu icon will open side panael with 2 options that will take you to manage categories and tags pages.
